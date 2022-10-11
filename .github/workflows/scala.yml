@@ -24,18 +24,3 @@ jobs:
         cache: 'sbt'
     - name: Run tests
       run: sbt test
-
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout current branch
-        uses: actions/checkout@v2.4.0
-      - name: Setup Scala and Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Cache scala dependencies
-        uses: coursier/cache-action@v6
-      - name: Check formatting and linting
-        run: sbt "-Dfatal-warnings=true" check
