@@ -1,0 +1,11 @@
+# OS
+.bsp
+.DS_Store
+
+# Scala
+project/project
+target
+
+# IDE
+.idea
+.vscode
