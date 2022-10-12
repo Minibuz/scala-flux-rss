@@ -9,8 +9,9 @@ object main {
       port(serverPort)
 
       get(
-        "/hello",
+        "/articles", "application/json",
         { (request: Request, response: Response) =>
+          println(request.queryParams("user_id"))
           response.`type`("application/json")
 
           """{"message": "hello"}"""
@@ -18,18 +19,18 @@ object main {
       )
 
       get(
-        "/hello/:name",
+        "/hello/:article_id",
         { (request: Request, response: Response) =>
           response.`type`("application/json")
 
-          val name = request.params("name")
+          val name = request.params("article_id")
 
           s"""{"message": "hello $name"}"""
         }
       )
 
-      get(
-        "/message",
+      post(
+        "/articles",
         { (request: Request, response: Response) =>
           response.`type`("application/json")
 
