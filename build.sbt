@@ -7,6 +7,8 @@ val libVersion =
     val kafka          = "3.3.1"
     val scalatest      = "3.2.14"
     val testcontainers = "1.17.5"
+    val typsafeConfig  = "1.4.2"
+    val datastax       = "4.15.0"
   }
 
 lazy val root = (project in file("."))
@@ -20,7 +22,10 @@ libraryDependencies ++= Seq(
   "org.apache.kafka" % "kafka-clients" % libVersion.kafka,
   "org.testcontainers" % "testcontainers" % libVersion.testcontainers,
   "org.apache.cassandra" % "cassandra-all" % libVersion.cassandra,
-  "org.scalatest" %% "scalatest" % libVersion.scalatest % Test
+  "org.scalatest" %% "scalatest" % libVersion.scalatest % Test,
+  "com.typesafe" % "config" % libVersion.typsafeConfig,
+  "com.datastax.oss" % "java-driver-core" % libVersion.datastax,
+  "com.datastax.oss" % "java-driver-query-builder" % libVersion.datastax
 )
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
