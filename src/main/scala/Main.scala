@@ -1,3 +1,4 @@
+import DataRss.Article
 import spark.Spark._
 import spark.{Request, Response}
 import com.datastax.oss.driver.api.core.`type`.DataTypes
@@ -81,5 +82,17 @@ object Main {
         s"""{"message": "Not Found"}"""
       }
     )
+  }
+
+  def findLast10ArticleSummaries(user_id: String) : List[Article] = {
+    List.empty
+  }
+
+  def findOneArticle(article_id: String) : Option[Article] = {
+    Some(Article(article_id))
+  }
+
+  def saveArticles(articles: List[Article]) : Unit = {
+
   }
 }

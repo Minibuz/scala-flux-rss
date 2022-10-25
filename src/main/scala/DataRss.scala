@@ -15,7 +15,7 @@ object DataRss {
 
   val RSS_TABLE = "RSS"
 
-  case class DataRss(
+  case class Article(
                       id: String
                     ) {
 
@@ -31,9 +31,9 @@ object DataRss {
 
   object Data {
 
-    def fromCassandra(row: Row): Try[DataRss] =
+    def fromCassandra(row: Row): Try[Article] =
       Try(
-        DataRss(
+        Article(
           id = row.getString("id")
         )
       )
@@ -49,19 +49,31 @@ object DataRss {
       cassandraConnection.execute(statement)
     }
 
-    private def retrieve(query: Select)(cassandraConnection: CassandraConnection): List[DataRss] = {
+    private def retrieve(query: Select)(cassandraConnection: CassandraConnection): List[Article] = {
       val statement = query.build
       val result: ResultSet = cassandraConnection.execute(statement)
 
       result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
     }
 
-    def retrieveById(id: Int)(cassandraConnection: CassandraConnection): List[DataRss] = {
+    def retrieveById(id: Int)(cassandraConnection: CassandraConnection): List[Article] = {
       val query =
         selectFrom(RSS_TABLE)
           .all()
           .where(column("id").isEqualTo(literal(id)))
       retrieve(query)(cassandraConnection)
     }
+  }
+
+  case class FluxRss(
+                       id: String
+                     ) {
+
+  }
+
+  case class User(
+                      id: String
+                    ) {
+
   }
 }
