@@ -7,6 +7,7 @@ import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert
 import com.datastax.oss.driver.api.querybuilder.relation.Relation._
 import com.datastax.oss.driver.api.querybuilder.select.Select
 
+import java.util.Date
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Success, Try}
 
@@ -15,7 +16,13 @@ object Article {
   val RSS_TABLE = "RSS"
 
   case class Article(
-                      id: String
+                      articleId: String,
+                      title: String,
+                      description: String,
+                      linkArticle: String,
+                      pubDate: Date,
+                      guid: String,
+                      linkFlux: String
                     ) {
 
     def insert(tableName: String)(cassandraConnection: CassandraConnection): Unit = {
