@@ -4,6 +4,7 @@
 
 # Scala
 project/project
+project/target
 target
 
 # IDE

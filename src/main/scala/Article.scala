@@ -1,7 +1,6 @@
 import Cassandra.CassandraConnection
 import com.datastax.oss.driver.api.core.`type`.DataTypes
-import com.datastax.oss.driver.api.core.{CqlIdentifier, CqlSession}
-import com.datastax.oss.driver.api.core.cql.{PrepareRequest, ResultSet, Row, SimpleStatement}
+import com.datastax.oss.driver.api.core.cql.{ResultSet, Row, SimpleStatement}
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder._
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert
@@ -11,7 +10,7 @@ import com.datastax.oss.driver.api.querybuilder.select.Select
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Success, Try}
 
-object DataRss {
+object Article {
 
   val RSS_TABLE = "RSS"
 
