@@ -16,28 +16,28 @@ import java.util.zip.GZIPInputStream
 object DocumentOp {
 
   case class Document(
-                        id: Int,
-                        message: String
-                      ) {
+                       id: Int,
+                       message: String
+                     ) {
 
-  /**
-   * We provide this function to insert an instance of Temperature
-   * inside Cassandra. Because ''state'' is Optional, we have to
-   * handle both cases when there is a state or not.
-   *
-   * By default, every column in Cassandra is optional, so we don't
-   * have to insert a state when the state is None.
-   */
-  def insert(tableName: String)(session: CqlSession): Unit = {
-    val baseQuery: RegularInsert =
-      insertInto(tableName)
-        .value("id", literal(id))
-        .value("message", literal(message))
+    /**
+     * We provide this function to insert an instance of Temperature
+     * inside Cassandra. Because ''state'' is Optional, we have to
+     * handle both cases when there is a state or not.
+     *
+     * By default, every column in Cassandra is optional, so we don't
+     * have to insert a state when the state is None.
+     */
+    def insert(tableName: String)(session: CqlSession): Unit = {
+      val baseQuery: RegularInsert =
+        insertInto(tableName)
+          .value("id", literal(id))
+          .value("message", literal(message))
 
-    val statement: SimpleStatement = baseQuery.build
-    session.execute(statement)
+      val statement: SimpleStatement = baseQuery.build
+      session.execute(statement)
+    }
   }
-}
 
 object Document {
 
