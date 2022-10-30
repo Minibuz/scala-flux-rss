@@ -15,7 +15,7 @@ object MainAbonnement {
     abonnement.insert(connection)
 
     val res = Abonnement.retrieveById(0)(connection)
-    val res1 = Abonnement.retrieveByFlux("toto.com")(connection)
+    //val res1 = Abonnement.retrieveByFlux("toto.com")(connection)
     println(res)
     //println(res1)
   }
