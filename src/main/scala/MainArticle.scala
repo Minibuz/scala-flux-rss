@@ -1,4 +1,4 @@
-import Article.{Article, Data}
+import Article.Article
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.now
 import org.apache.cassandra.db.marshal.TimeUUIDType
 
@@ -14,16 +14,16 @@ object MainArticle {
     connection.createKeyspace("my_keyspace")
     connection.useKeyspace("my_keyspace")
 
-    Data.createTable(connection)
+    Article.createTable(connection)
 
-       Article.createAndInsertArticle(
-         "Test",
-         "Ceci est un article test",
-         "https://fluxTest.fr/articleTest",
-         LocalDate.now(),
-         Random.nextLong(),
-         "https://fluxTest.fr"
-       )(connection)
+    Article.createAndInsertArticle(
+      "Test",
+      "Ceci est un article test",
+      "https://fluxTest.fr/articleTest",
+      LocalDate.now(),
+      Random.nextLong(),
+      "https://fluxTest.fr"
+    )(connection)
 
     Article.createAndInsertArticle(
       "newTest",
@@ -34,6 +34,6 @@ object MainArticle {
       "https://fluxTest.fr"
     )(connection)
 
-    println(Data.retrieveLastTenArticles()(connection))
+    println(Article.retrieveLastTenArticles()(connection))
   }
 }

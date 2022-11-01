@@ -44,6 +44,7 @@ object Article {
   }
 
   object Article {
+
     def createAndInsertArticle(title: String, description: String, linkArticle: String, pubDate: LocalDate, guid: Long, linkFlux: String)(cassandraConnection: CassandraConnection): Article = {
       val article = Article(
         articleID = None,
@@ -57,8 +58,6 @@ object Article {
       article.insert(cassandraConnection)
       article
     }
-  }
-  object Data {
 
     def fromCassandra(row: Row): Try[Article] =
       Try(
