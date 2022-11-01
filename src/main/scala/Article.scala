@@ -9,6 +9,7 @@ import com.datastax.oss.driver.api.querybuilder.relation.Relation._
 import com.datastax.oss.driver.api.querybuilder.select.Select
 
 import java.time.LocalDate
+import java.util.UUID
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Failure, Success, Try}
 
@@ -17,7 +18,7 @@ object Article {
   val ARTICLE_TABLE = "ARTICLE"
 
   case class Article(
-                      articleId: Long,
+                    articleID: Option[UUID],
                       title: String,
                       description: String,
                       linkArticle: String,
@@ -29,7 +30,7 @@ object Article {
     def insert(cassandraConnection: CassandraConnection): Unit = {
       val baseQuery: RegularInsert =
         insertInto(ARTICLE_TABLE)
-          .value("articleId", literal(articleId))
+          .value("articleID", literal(UUID.randomUUID()))
           .value("title", literal(title))
           .value("description", literal(description))
           .value("linkArticle", literal(linkArticle))
@@ -43,9 +44,9 @@ object Article {
   }
 
   object Article {
-    def newArticle(title: String, description: String, linkArticle: String, pubDate: LocalDate, guid: Long, linkFlux: String)(cassandraConnection: CassandraConnection): Article = {
+    def createAndInsertArticle(title: String, description: String, linkArticle: String, pubDate: LocalDate, guid: Long, linkFlux: String)(cassandraConnection: CassandraConnection): Article = {
       val article = Article(
-        articleId = cassandraConnection.getArticleId,
+        articleID = None,
         title = title,
         description = description,
         linkArticle = linkArticle,
@@ -62,7 +63,7 @@ object Article {
     def fromCassandra(row: Row): Try[Article] =
       Try(
         Article(
-          articleId = row.getLong("articleId"),
+          articleID = Some(row.getUuid("articleID")),
           title = row.getString("title"),
           description = row.getString("description"),
           linkArticle = row.getString("linkArticle"),
@@ -77,7 +78,7 @@ object Article {
         SchemaBuilder
           .createTable(ARTICLE_TABLE)
           .ifNotExists()
-          .withPartitionKey("articleID", DataTypes.BIGINT)
+          .withPartitionKey("articleID", DataTypes.UUID)
           .withColumn("title", DataTypes.TEXT)
           .withColumn("description", DataTypes.TEXT)
           .withColumn("linkArticle", DataTypes.TEXT)
@@ -91,14 +92,20 @@ object Article {
 
     private def retrieve(query: Select)(cassandraConnection: CassandraConnection): List[Article] = {
       val result: ResultSet = cassandraConnection.execute(query.build)
-      result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
+      result.all().asScala.toList.map(fromCassandra).collect {case Success(v) => v}
     }
 
     def retrieveById(id: Long)(cassandraConnection: CassandraConnection): List[Article] = {
       val query =
         selectFrom(ARTICLE_TABLE)
           .all()
-          .where(column("articleId").isEqualTo(literal(id)))
+      retrieve(query)(cassandraConnection)
+    }
+
+    def retrieveLastTenArticles()(cassandraConnection: CassandraConnection): List[Article] = {
+      val query =
+        selectFrom(ARTICLE_TABLE)
+          .all().limit(10)
       retrieve(query)(cassandraConnection)
     }
   }

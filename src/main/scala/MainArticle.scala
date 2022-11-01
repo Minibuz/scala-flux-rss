@@ -1,4 +1,6 @@
 import Article.{Article, Data}
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.now
+import org.apache.cassandra.db.marshal.TimeUUIDType
 
 import java.time.LocalDate
 import scala.util.Random
@@ -14,8 +16,7 @@ object MainArticle {
 
     Data.createTable(connection)
 
-     val article: Article = {
-       Article.newArticle(
+       Article.createAndInsertArticle(
          "Test",
          "Ceci est un article test",
          "https://fluxTest.fr/articleTest",
@@ -23,27 +24,16 @@ object MainArticle {
          Random.nextLong(),
          "https://fluxTest.fr"
        )(connection)
-     }
 
-    val article1: Article = {
-      Article.newArticle(
-        "newTest",
-        "Ceci est un 2e article test",
-        "https://fluxTest.fr/articleTest2",
-        LocalDate.now(),
-        Random.nextLong(),
-        "https://fluxTest.fr"
-      )(connection)
-    }
+    Article.createAndInsertArticle(
+      "newTest",
+      "Ceci est un 2e article test",
+      "https://fluxTest.fr/articleTest2",
+      LocalDate.now(),
+      Random.nextLong(),
+      "https://fluxTest.fr"
+    )(connection)
 
-    val listArticle: List[Article] = Data.retrieveById(article.articleId)(connection)
-    val listArticle2: List[Article] = Data.retrieveById(article1.articleId)(connection)
-
-    for(articleTest <- listArticle) {
-      println(articleTest)
-    }
-    for (articleTest2 <- listArticle2) {
-      println(articleTest2)
-    }
+    println(Data.retrieveLastTenArticles()(connection))
   }
 }
