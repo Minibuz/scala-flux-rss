@@ -29,38 +29,43 @@ object Abonnement {
     }
   }
 
-  def fromCassandra(row: Row): Try[Abonnement] =
-    Try(
-      Abonnement(
-        idAbonnement = row.getLong("id"),
-        flux = row.getString("flux")
+  object Data {
+    def fromCassandra(row: Row): Try[Abonnement] =
+      Try(
+        Abonnement(
+          idAbonnement = row.getLong("id"),
+          flux = row.getString("flux")
+        )
       )
-    )
 
-  def createTableById(cassandraConnection: CassandraConnection): Unit = {
-    val query =
-      SchemaBuilder
-        .createTable(ABONNEMENT_TABLE)
-        .ifNotExists()
-        .withPartitionKey("id", DataTypes.BIGINT)
-        .withColumn("flux", DataTypes.TEXT)
-    val statement: SimpleStatement = query.build
-    cassandraConnection.execute(statement)
-  }
-  private def retrieve(query: Select)(cassandraConnection: CassandraConnection): List[Abonnement] = {
-    val statement = query.build
-    val result: ResultSet = cassandraConnection.execute(statement)
+    def createTableById(cassandraConnection: CassandraConnection): Unit = {
+      val query =
+        SchemaBuilder
+          .createTable(ABONNEMENT_TABLE)
+          .ifNotExists()
+          .withPartitionKey("id", DataTypes.BIGINT)
+          .withColumn("flux", DataTypes.TEXT)
+      val statement: SimpleStatement = query.build
+      cassandraConnection.execute(statement)
+    }
 
-    result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
+    private def retrieve(query: Select)(cassandraConnection: CassandraConnection): List[Abonnement] = {
+      val statement = query.build
+      val result: ResultSet = cassandraConnection.execute(statement)
+
+      result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
+    }
+
+    def retrieveById(id: Long)(cassandraConnection: CassandraConnection): Abonnement = {
+      val query =
+        selectFrom(ABONNEMENT_TABLE)
+          .all()
+          .where(column("id").isEqualTo(literal(id)))
+      retrieve(query)(cassandraConnection).last
+    }
   }
 
-  def retrieveById(id: Int)(cassandraConnection: CassandraConnection): Abonnement = {
-    val query =
-      selectFrom(ABONNEMENT_TABLE)
-        .all()
-        .where(column("id").isEqualTo(literal(id)))
-    retrieve(query)(cassandraConnection).last
-  }
+
 
   /*def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
     val query =
