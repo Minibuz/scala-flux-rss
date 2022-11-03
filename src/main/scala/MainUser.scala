@@ -20,7 +20,6 @@ object MainUser {
     val user = User.createUser(list)(connection)
     println(user.idUser.get)
     val res = User.retrieveById(user.idUser.get)(connection)
-    println(res)
     val res2 = User.retrieveListAbonnementByUser(user)(connection)
     println(res2)
   }
