@@ -8,7 +8,7 @@ object MainAbonnement {
     connection.createKeyspace("my_keyspace")
     connection.useKeyspace("my_keyspace")
 
-    Abonnement.createTableById(connection)
+    Abonnement.createTable(connection)
     val abonnement = new Abonnement.Abonnement(0, "test.com")
     abonnement.insert(connection)
     val abonnement1 = new Abonnement.Abonnement(1, "toto.com")

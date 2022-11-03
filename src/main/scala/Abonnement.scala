@@ -37,7 +37,7 @@ object Abonnement {
       )
     )
 
-  def createTableById(cassandraConnection: CassandraConnection): Unit = {
+  def createTable(cassandraConnection: CassandraConnection): Unit = {
     val query =
       SchemaBuilder
         .createTable(ABONNEMENT_TABLE)
@@ -54,12 +54,12 @@ object Abonnement {
     result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
   }
 
-  def retrieveById(id: Int)(cassandraConnection: CassandraConnection): Abonnement = {
+  def retrieveById(id: Int)(cassandraConnection: CassandraConnection): Option[Abonnement] = {
     val query =
       selectFrom(ABONNEMENT_TABLE)
         .all()
         .where(column("id").isEqualTo(literal(id)))
-    retrieve(query)(cassandraConnection).last
+    retrieve(query)(cassandraConnection).headOption
   }
 
   /*def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
