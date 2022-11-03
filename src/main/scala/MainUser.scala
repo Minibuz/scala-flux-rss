@@ -1,4 +1,5 @@
 import java.util
+import java.util.UUID
 
 object MainUser {
   val serverPort = 8090
@@ -9,25 +10,18 @@ object MainUser {
     connection.createKeyspace("my_keyspace")
     connection.useKeyspace("my_keyspace")
 
-    Abonnement.Data.createTableById(connection)
-    val abonnement = new Abonnement.Abonnement(0, "test.com")
-    abonnement.insert(connection)
-    val abonnement1 = new Abonnement.Abonnement(1, "toto.com")
-    abonnement.insert(connection)
-    val abonnement2 = new Abonnement.Abonnement(2, "tata.com")
-    abonnement.insert(connection)
-    abonnement1.insert(connection)
-    abonnement2.insert(connection)
-
-
+    Abonnement.createTableById(connection)
+    val abonnement = Abonnement.createAbonnement("guillaume.com")(connection)
+    val abonnement1 =  Abonnement.createAbonnement("robin.com")(connection)
+    val abonnement2 =  Abonnement.createAbonnement( "leo.com")(connection)
     User.createTableById(connection)
-    val list : List[Long] = List(0,1,2)
-    val user = new User.User(0, list)
-    user.insert(connection)
-    val res = User.retrieveById(0)(connection)
-
-    //val resA = Abonnement.Data.retrieveById(1)(connection)
-    val res2 = User.retrieveListAbonnementById(0)(connection)
+    val list : List[UUID] = List(abonnement.idAbonnement.get, abonnement1.idAbonnement.get, abonnement2.idAbonnement.get)
+    //println(list)
+    val user = User.createUser(list)(connection)
+    println(user.idUser.get)
+    val res = User.retrieveById(user.idUser.get)(connection)
+  println(res)
+    val res2 = User.retrieveListAbonnementByUser(user)(connection)
     println(res2)
   }
 }
