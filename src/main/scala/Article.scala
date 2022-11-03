@@ -5,13 +5,13 @@ import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder._
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert
-import com.datastax.oss.driver.api.querybuilder.relation.Relation._
+import com.datastax.oss.driver.api.querybuilder.relation.Relation.column
 import com.datastax.oss.driver.api.querybuilder.select.Select
 
 import java.time.LocalDate
 import java.util.UUID
 import scala.jdk.CollectionConverters.CollectionHasAsScala
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 object Article {
 
@@ -94,10 +94,11 @@ object Article {
       result.all().asScala.toList.map(fromCassandra).collect {case Success(v) => v}
     }
 
-    def retrieveById(id: Long)(cassandraConnection: CassandraConnection): List[Article] = {
+    def retrieveById(id: UUID)(cassandraConnection: CassandraConnection): List[Article] = {
       val query =
         selectFrom(ARTICLE_TABLE)
           .all()
+          .where(column("articleId").isEqualTo(literal(id)))
       retrieve(query)(cassandraConnection)
     }
 

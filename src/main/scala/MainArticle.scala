@@ -1,6 +1,4 @@
 import Article.Article
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder.now
-import org.apache.cassandra.db.marshal.TimeUUIDType
 
 import java.time.LocalDate
 import scala.util.Random
