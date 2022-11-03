@@ -12,20 +12,6 @@ object Main {
     connection.createKeyspace("my_keyspace")
     connection.useKeyspace("my_keyspace")
 
-    DocumentOp.Document.createTableById(connection.cqlSession)
-
-    val temperature: DocumentOp.Document =
-      DocumentOp.Document(
-        id = 1,
-        message = "Test"
-      )
-
-    temperature.insert(DocumentOp.Document.DOCUMENT)(connection.cqlSession)
-
-    val document = DocumentOp.Document.retrieveById(1)(connection.cqlSession)
-
-    println(document)
-
     port(serverPort)
 
     get(
@@ -45,7 +31,7 @@ object Main {
 
         val name = request.params("article_id")
 
-        println(DocumentOp.Document.retrieveById(name.toInt)(connection.cqlSession))
+        println(name)
 
         s"""{"message": "article id = $name"}"""
       }
