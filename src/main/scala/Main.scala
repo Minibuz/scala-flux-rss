@@ -80,9 +80,9 @@ object Main {
     List.empty
   }
 
-  def findOneArticle(article_id: String) : Option[Article] = {
-    Some(Article(article_id))
-  }
+//  def findOneArticle(article_id: String) : Option[Article] = {
+//    Some(Article(article_id))
+//  }
 
   def saveArticles(articles: List[Article]) : Unit = {
 
