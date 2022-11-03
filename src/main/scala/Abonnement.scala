@@ -72,11 +72,11 @@ object Abonnement {
     retrieve(query)(cassandraConnection).last
   }
 
-  def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
+  /*def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
     val query =
       selectFrom(ABONNEMENT_TABLE)
         .all()
         .where(column("flux").isEqualTo(literal(flux))).allowFiltering()
     retrieve(query)(cassandraConnection).last
-  }
+  }*/
 }
