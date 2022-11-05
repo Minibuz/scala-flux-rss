@@ -14,14 +14,24 @@ import scala.util.{Success, Try}
 object Abonnement {
   val ABONNEMENT_TABLE = "ABONNEMENT"
 
+  def createAbonnement(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
+    val abonnement = Abonnement(
+      idAbonnement = Option(UUID.randomUUID()),
+      flux = flux
+    )
+    abonnement.insert(cassandraConnection)
+    abonnement
+  }
+
   case class Abonnement(
-                         idAbonnement: Long,
+                         idAbonnement: Option[UUID],
                          flux: String
                        ) {
+
     def insert(cassandraConnection: CassandraConnection): Unit = {
       val baseQuery: RegularInsert =
         insertInto(ABONNEMENT_TABLE)
-          .value("id", literal(idAbonnement))
+          .value("id", literal(idAbonnement.get))
           .value("flux", literal(flux))
 
       val statement: SimpleStatement = baseQuery.build
@@ -32,7 +42,7 @@ object Abonnement {
   def fromCassandra(row: Row): Try[Abonnement] =
     Try(
       Abonnement(
-        idAbonnement = row.getLong("id"),
+        idAbonnement = Some(row.getUuid("id")),
         flux = row.getString("flux")
       )
     )
@@ -42,7 +52,7 @@ object Abonnement {
       SchemaBuilder
         .createTable(ABONNEMENT_TABLE)
         .ifNotExists()
-        .withPartitionKey("id", DataTypes.BIGINT)
+        .withPartitionKey("id", DataTypes.UUID)
         .withColumn("flux", DataTypes.TEXT)
     val statement: SimpleStatement = query.build
     cassandraConnection.execute(statement)
@@ -54,7 +64,7 @@ object Abonnement {
     result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
   }
 
-  def retrieveById(id: Int)(cassandraConnection: CassandraConnection): Option[Abonnement] = {
+  def retrieveById(id: UUID)(cassandraConnection: CassandraConnection): Option[Abonnement] = {
     val query =
       selectFrom(ABONNEMENT_TABLE)
         .all()
@@ -62,11 +72,11 @@ object Abonnement {
     retrieve(query)(cassandraConnection).headOption
   }
 
-  /*def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
+  def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
     val query =
       selectFrom(ABONNEMENT_TABLE)
         .all()
-        .where(column("flux").isEqualTo(literal(flux)))
+        .where(column("flux").isEqualTo(literal(flux))).allowFiltering()
     retrieve(query)(cassandraConnection).last
-  }*/
+  }
 }
