@@ -1,6 +1,10 @@
 import Article.Article
+import Abonnement.Abonnement
 import spark.Spark._
 import spark.{Request, Response}
+
+import java.util.UUID
+import scala.util.Failure
 
 object Main {
   val serverPort = 8090
@@ -11,6 +15,9 @@ object Main {
 
     connection.createKeyspace("my_keyspace")
     connection.useKeyspace("my_keyspace")
+
+    Article.createTable(connection)
+    Abonnement.createTable(connection)
 
     port(serverPort)
 
@@ -29,11 +36,14 @@ object Main {
       { (request: Request, response: Response) =>
         response.`type`("application/json")
 
-        val name = request.params("article_id")
+        val message = for {
+          id <- Option(request.params("article_id"))
+          // Faudrait peut être fix le UUID.fromString, car il peut péter une erreur
+          article <- Article.retrieveById(UUID.fromString(id))(connection)
+          msg = s"""$article"""
+        } yield msg
 
-        println(name)
-
-        s"""{"message": "article id = $name"}"""
+        message.getOrElse(s"""no article for that id""")
       }
     )
 

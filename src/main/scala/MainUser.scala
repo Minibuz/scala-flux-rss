@@ -1,5 +1,6 @@
-import java.util
+import User.User
 import java.util.UUID
+import Abonnement.Abonnement
 
 object MainUser {
   val serverPort = 8090
@@ -10,11 +11,11 @@ object MainUser {
     connection.createKeyspace("my_keyspace")
     connection.useKeyspace("my_keyspace")
 
-    Abonnement.createTableById(connection)
+    Abonnement.createTable(connection)
     val abonnement = Abonnement.createAbonnement("guillaume.com")(connection)
     val abonnement1 =  Abonnement.createAbonnement("robin.com")(connection)
     val abonnement2 =  Abonnement.createAbonnement( "leo.com")(connection)
-    User.createTableById(connection)
+    User.createTable(connection)
     val list : List[UUID] = List(abonnement.idAbonnement.get, abonnement1.idAbonnement.get, abonnement2.idAbonnement.get)
     //println(list)
     val user = User.createUser(list)(connection)

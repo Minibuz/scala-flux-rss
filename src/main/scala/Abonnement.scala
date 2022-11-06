@@ -12,16 +12,8 @@ import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Success, Try}
 
 object Abonnement {
-  val ABONNEMENT_TABLE = "ABONNEMENT"
 
-  def createAbonnement(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
-    val abonnement = Abonnement(
-      idAbonnement = Option(UUID.randomUUID()),
-      flux = flux
-    )
-    abonnement.insert(cassandraConnection)
-    abonnement
-  }
+  val ABONNEMENT_TABLE = "ABONNEMENT"
 
   case class Abonnement(
                          idAbonnement: Option[UUID],
@@ -39,44 +31,57 @@ object Abonnement {
     }
   }
 
-  def fromCassandra(row: Row): Try[Abonnement] =
-    Try(
-      Abonnement(
-        idAbonnement = Some(row.getUuid("id")),
-        flux = row.getString("flux")
+  object Abonnement {
+
+    def fromCassandra(row: Row): Try[Abonnement] =
+      Try(
+        Abonnement(
+          idAbonnement = Some(row.getUuid("id")),
+          flux = row.getString("flux")
+        )
       )
-    )
 
-  def createTableById(cassandraConnection: CassandraConnection): Unit = {
-    val query =
-      SchemaBuilder
-        .createTable(ABONNEMENT_TABLE)
-        .ifNotExists()
-        .withPartitionKey("id", DataTypes.UUID)
-        .withColumn("flux", DataTypes.TEXT)
-    val statement: SimpleStatement = query.build
-    cassandraConnection.execute(statement)
-  }
-  private def retrieve(query: Select)(cassandraConnection: CassandraConnection): List[Abonnement] = {
-    val statement = query.build
-    val result: ResultSet = cassandraConnection.execute(statement)
+    def createTable(cassandraConnection: CassandraConnection): Unit = {
+      val query =
+        SchemaBuilder
+          .createTable(ABONNEMENT_TABLE)
+          .ifNotExists()
+          .withPartitionKey("id", DataTypes.UUID)
+          .withColumn("flux", DataTypes.TEXT)
+      val statement: SimpleStatement = query.build
+      cassandraConnection.execute(statement)
+    }
 
-    result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
-  }
+    private def retrieve(query: Select)(cassandraConnection: CassandraConnection): List[Abonnement] = {
+      val statement = query.build
+      val result: ResultSet = cassandraConnection.execute(statement)
 
-  def retrieveById(id: UUID)(cassandraConnection: CassandraConnection): Abonnement = {
-    val query =
-      selectFrom(ABONNEMENT_TABLE)
-        .all()
-        .where(column("id").isEqualTo(literal(id)))
-    retrieve(query)(cassandraConnection).last
-  }
+      result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
+    }
 
-  def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
-    val query =
-      selectFrom(ABONNEMENT_TABLE)
-        .all()
-        .where(column("flux").isEqualTo(literal(flux))).allowFiltering()
-    retrieve(query)(cassandraConnection).last
+    def retrieveById(id: UUID)(cassandraConnection: CassandraConnection): Option[Abonnement] = {
+      val query =
+        selectFrom(ABONNEMENT_TABLE)
+          .all()
+          .where(column("id").isEqualTo(literal(id)))
+      retrieve(query)(cassandraConnection).headOption
+    }
+
+    def retrieveByFlux(flux: String)(cassandraConnection: CassandraConnection): Option[Abonnement] = {
+      val query =
+        selectFrom(ABONNEMENT_TABLE)
+          .all()
+          .where(column("flux").isEqualTo(literal(flux))).allowFiltering()
+      retrieve(query)(cassandraConnection).headOption
+    }
+
+    def createAbonnement(flux: String)(cassandraConnection: CassandraConnection): Abonnement = {
+      val abonnement = Abonnement(
+        idAbonnement = Option(UUID.randomUUID()),
+        flux = flux
+      )
+      abonnement.insert(cassandraConnection)
+      abonnement
+    }
   }
 }

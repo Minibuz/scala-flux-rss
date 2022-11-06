@@ -94,12 +94,12 @@ object Article {
       result.all().asScala.toList.map(fromCassandra).collect {case Success(v) => v}
     }
 
-    def retrieveById(id: UUID)(cassandraConnection: CassandraConnection): List[Article] = {
+    def retrieveById(id: UUID)(cassandraConnection: CassandraConnection): Option[Article] = {
       val query =
         selectFrom(ARTICLE_TABLE)
           .all()
           .where(column("articleId").isEqualTo(literal(id)))
-      retrieve(query)(cassandraConnection)
+      retrieve(query)(cassandraConnection).headOption
     }
 
     def retrieveLastTenArticles()(cassandraConnection: CassandraConnection): List[Article] = {
