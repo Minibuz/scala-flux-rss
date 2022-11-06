@@ -105,22 +105,21 @@ object Article {
 
     def retrieveLastTenArticles(user: User)(cassandraConnection: CassandraConnection): List[Article] = {
       val list : List[UUID] = user.abonnement
-      var listFlux : List[String] = List()
-      var listArticle : List[Article] = List()
-      for (abonnementID <- list) {
-        listFlux =  Abonnement.Abonnement.retrieveById(abonnementID)(cassandraConnection).get.flux :: listFlux
-      }
 
-      for (flux <- listFlux) {
-        val query =
-          selectFrom(ARTICLE_TABLE)
-            .all()
-            .where(column("linkFlux")
-              .isEqualTo(literal(flux)))
-            .limit(10).allowFiltering()
-        listArticle = listArticle ::: retrieve(query)(cassandraConnection)
-      }
-      listArticle.sortBy(_.pubDate).take(10)
+      val listFlux : List[String] =
+        list.map(id => Abonnement.Abonnement.retrieveById(id)(cassandraConnection))
+            .map(option => option.get)
+            .map(abonnement => abonnement.flux)
+
+      listFlux.flatMap(flux => {
+          val query =
+            selectFrom(ARTICLE_TABLE)
+              .all()
+              .where(column("linkFlux")
+                .isEqualTo(literal(flux)))
+              .limit(10).allowFiltering()
+          retrieve(query)(cassandraConnection)
+        }).sortBy(_.pubDate).take(10)
     }
   }
 }
