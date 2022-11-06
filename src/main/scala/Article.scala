@@ -1,4 +1,5 @@
 import Cassandra.CassandraConnection
+import User.User
 import com.datastax.oss.driver.api.core.`type`.DataTypes
 import com.datastax.oss.driver.api.core.cql.{ResultSet, Row, SimpleStatement}
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder
@@ -9,7 +10,7 @@ import com.datastax.oss.driver.api.querybuilder.relation.Relation.column
 import com.datastax.oss.driver.api.querybuilder.select.Select
 
 import java.time.LocalDate
-import java.util.UUID
+import java.util.{Comparator, UUID}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Success, Try}
 
@@ -23,7 +24,7 @@ object Article {
                       description: String,
                       linkArticle: String,
                       pubDate: LocalDate,
-                      guid: Long,
+                      guid: UUID,
                       linkFlux: String
                     ) {
 
@@ -45,7 +46,7 @@ object Article {
 
   object Article {
 
-    def createAndInsertArticle(title: String, description: String, linkArticle: String, pubDate: LocalDate, guid: Long, linkFlux: String)(cassandraConnection: CassandraConnection): Article = {
+    def createAndInsertArticle(title: String, description: String, linkArticle: String, pubDate: LocalDate, guid: UUID, linkFlux: String)(cassandraConnection: CassandraConnection): Article = {
       val article = Article(
         articleID = None,
         title = title,
@@ -67,7 +68,7 @@ object Article {
           description = row.getString("description"),
           linkArticle = row.getString("linkArticle"),
           pubDate = row.getLocalDate("pubDate"),
-          guid = row.getLong("guid"),
+          guid = row.getUuid("guid"),
           linkFlux = row.getString("linkFlux")
         )
       )
@@ -82,7 +83,7 @@ object Article {
           .withColumn("description", DataTypes.TEXT)
           .withColumn("linkArticle", DataTypes.TEXT)
           .withClusteringColumn("pubDate", DataTypes.DATE)
-          .withColumn("guid", DataTypes.BIGINT)
+          .withColumn("guid", DataTypes.UUID)
           .withColumn("linkFlux", DataTypes.TEXT)
           .withClusteringOrder("pubDate", ClusteringOrder.DESC)
 
@@ -102,11 +103,24 @@ object Article {
       retrieve(query)(cassandraConnection).headOption
     }
 
-    def retrieveLastTenArticles()(cassandraConnection: CassandraConnection): List[Article] = {
-      val query =
-        selectFrom(ARTICLE_TABLE)
-          .all().limit(10)
-      retrieve(query)(cassandraConnection)
+    def retrieveLastTenArticles(user: User)(cassandraConnection: CassandraConnection): List[Article] = {
+      val list : List[UUID] = user.abonnement
+      var listFlux : List[String] = List()
+      var listArticle : List[Article] = List()
+      for (abonnementID <- list) {
+        listFlux =  Abonnement.retrieveById(abonnementID)(cassandraConnection).flux :: listFlux
+      }
+
+      for (flux <- listFlux) {
+        val query =
+          selectFrom(ARTICLE_TABLE)
+            .all()
+            .where(column("linkFlux")
+              .isEqualTo(literal(flux)))
+            .limit(10).allowFiltering()
+        listArticle = listArticle ::: retrieve(query)(cassandraConnection)
+      }
+      listArticle.sortBy(_.pubDate).take(10)
     }
   }
 }
