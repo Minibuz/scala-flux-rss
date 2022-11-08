@@ -7,7 +7,7 @@ import scala.util.Random
 
 object Injection {
 
-  def injectDatas(connection : CassandraConnection): Unit = {
+  def injectDatas(connection : CassandraConnection): List[UUID] = {
     val listUser : List[User] = List()
     var listAbonnement: List[Abonnement] = List(
       Abonnement.createAbonnement("https://www.lemonde.fr")(connection),
@@ -27,5 +27,7 @@ object Injection {
       User.createUser(List(UUID.fromString(listAbonnement.take(size).foreach[UUID](Abonnement => Abonnement.idAbonnement.get).toString)))(connection) :: listUser
       listAbonnement = Random.shuffle(listAbonnement)
     }
+
+    List(UUID.fromString(listUser.foreach(User => User.idUser).toString))
   }
 }
