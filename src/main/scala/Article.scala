@@ -24,7 +24,7 @@ object Article {
                       description: String,
                       linkArticle: String,
                       pubDate: LocalDate,
-                      guid: UUID,
+                      guid: String,
                       linkFlux: String
                     ) {
 
@@ -46,7 +46,7 @@ object Article {
 
   object Article {
 
-    def createAndInsertArticle(title: String, description: String, linkArticle: String, pubDate: LocalDate, guid: UUID, linkFlux: String)(cassandraConnection: CassandraConnection): Article = {
+    def createAndInsertArticle(title: String, description: String, linkArticle: String, pubDate: LocalDate, guid: String, linkFlux: String)(cassandraConnection: CassandraConnection): Article = {
       val article = Article(
         articleID = None,
         title = title,
@@ -68,7 +68,7 @@ object Article {
           description = row.getString("description"),
           linkArticle = row.getString("linkArticle"),
           pubDate = row.getLocalDate("pubDate"),
-          guid = row.getUuid("guid"),
+          guid = row.getString("guid"),
           linkFlux = row.getString("linkFlux")
         )
       )
@@ -83,7 +83,7 @@ object Article {
           .withColumn("description", DataTypes.TEXT)
           .withColumn("linkArticle", DataTypes.TEXT)
           .withClusteringColumn("pubDate", DataTypes.DATE)
-          .withColumn("guid", DataTypes.UUID)
+          .withColumn("guid", DataTypes.TEXT)
           .withColumn("linkFlux", DataTypes.TEXT)
           .withClusteringOrder("pubDate", ClusteringOrder.DESC)
 
@@ -105,22 +105,21 @@ object Article {
 
     def retrieveLastTenArticles(user: User)(cassandraConnection: CassandraConnection): List[Article] = {
       val list : List[UUID] = user.abonnement
-      var listFlux : List[String] = List()
-      var listArticle : List[Article] = List()
-      for (abonnementID <- list) {
-        listFlux =  Abonnement.retrieveById(abonnementID)(cassandraConnection).flux :: listFlux
-      }
 
-      for (flux <- listFlux) {
-        val query =
-          selectFrom(ARTICLE_TABLE)
-            .all()
-            .where(column("linkFlux")
-              .isEqualTo(literal(flux)))
-            .limit(10).allowFiltering()
-        listArticle = listArticle ::: retrieve(query)(cassandraConnection)
-      }
-      listArticle.sortBy(_.pubDate).take(10)
+      val listFlux : List[String] =
+        list.map(id => Abonnement.Abonnement.retrieveById(id)(cassandraConnection))
+            .map(option => option.get)
+            .map(abonnement => abonnement.flux)
+
+      listFlux.flatMap(flux => {
+          val query =
+            selectFrom(ARTICLE_TABLE)
+              .all()
+              .where(column("linkFlux")
+                .isEqualTo(literal(flux)))
+              .limit(10).allowFiltering()
+          retrieve(query)(cassandraConnection)
+        }).sortBy(_.pubDate).take(10)
     }
   }
 }
