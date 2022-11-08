@@ -7,9 +7,8 @@ import scala.util.Random
 
 object Injection {
 
-  def injectDatas(connection : CassandraConnection): List[UUID] = {
-    val listUser : List[User] = List()
-    var listAbonnement: List[Abonnement] = List(
+  def injectDatas(connection : CassandraConnection): List[User] = {
+    val listAbonnement: List[Abonnement] = List(
       Abonnement.createAbonnement("https://www.lemonde.fr")(connection),
       Abonnement.createAbonnement("https://www.youtube.com")(connection),
       Abonnement.createAbonnement("https://ent.univ-eiffel.fr")(connection),
@@ -22,12 +21,11 @@ object Injection {
       Abonnement.createAbonnement("https://www.primevideo.com")(connection),
       Abonnement.createAbonnement("https://www.root-me.org")(connection)
     )
-    for(i <- 1 to 10) {
-      val size : Int = Random.between(1, 10)
-      User.createUser(List(UUID.fromString(listAbonnement.take(size).foreach[UUID](Abonnement => Abonnement.idAbonnement.get).toString)))(connection) :: listUser
-      listAbonnement = Random.shuffle(listAbonnement)
-    }
 
-    List(UUID.fromString(listUser.foreach(User => User.idUser).toString))
+    List.range(1, 10).map(_ => {
+      val elements = Random.between(1, 10)
+      val shuffled = Random.shuffle(listAbonnement)
+      User.createUser(shuffled.take(elements).map(abonnement => abonnement.idAbonnement.get))(connection)
+    })
   }
 }
