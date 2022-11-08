@@ -3,6 +3,7 @@ import Abonnement.Abonnement
 import User.User
 import io.circe._
 import io.circe.parser._
+import io.circe.syntax.EncoderOps
 import spark.Spark._
 import spark.{Request, Response}
 
@@ -31,7 +32,7 @@ object Main {
         response.`type`("application/json")
 
         val articles : Option[List[Article]] = for {
-          id <- Option(request.params("user_id"))
+          id <- Option(request.queryParams("user_id"))
           // Faudrait peut être fix le UUID.fromString, car il peut péter une erreur
           user <- User.retrieveById(UUID.fromString(id))(connection)
           articles = Article.retrieveLastTenArticles(user)(connection)
@@ -54,6 +55,16 @@ object Main {
         } yield msg
 
         message.getOrElse(s"""no article for that id""")
+      }
+    )
+
+    get(
+      "/users",
+      { (request: Request, response: Response) =>
+        response.`type`("application/json")
+
+        val users = Injection.injectDatas(connection)
+        s"""$users"""
       }
     )
 
