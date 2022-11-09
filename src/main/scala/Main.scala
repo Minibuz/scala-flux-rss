@@ -38,7 +38,13 @@ object Main {
           articles = Article.retrieveLastTenArticles(user)(connection)
         } yield articles
 
-        s"""$articles"""
+        articles match {
+          case None => {
+            response.status(418)
+            s"""Not found"""
+          }
+          case Some(v) => s"""$v"""
+        }
       }
     )
 
@@ -54,7 +60,13 @@ object Main {
           msg = s"""$article"""
         } yield msg
 
-        message.getOrElse(s"""no article for that id""")
+        message match {
+          case None => {
+            response.status(418)
+            s"""Not found"""
+          }
+          case Some(v) => s"""$v"""
+        }
       }
     )
 
