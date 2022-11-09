@@ -85,7 +85,7 @@ object Article {
           .withClusteringColumn("pubDate", DataTypes.DATE)
           .withColumn("guid", DataTypes.TEXT)
           .withColumn("linkFlux", DataTypes.TEXT)
-          .withClusteringOrder("pubDate", ClusteringOrder.DESC)
+          .withClusteringOrder("pubDate", ClusteringOrder.ASC)
 
       cassandraConnection.execute(query.build)
     }
